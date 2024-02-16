@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: testapp-1
+    type: go-app
+  name: testapp-1
+  namespace: task-1
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: testapp-1
+      type: go-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: testapp-1
+        type: go-app
+    spec:
+      containers:
+      - image: excite13/k8sapp:0.2
+        imagePullPolicy: IfNotPresent
+        name: go-app
+        command: ["/root/simple-api", "-config", "/etc/config/config.yaml"]
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          successThreshold: 3
+        ports:
+        - containerPort: 8081
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: config-volume
+        configMap:
+          name: testapp-1-config
