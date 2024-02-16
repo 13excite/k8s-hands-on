@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: testapp-3-config
+  namespace: task-3
+data:
+  config.yaml: |
+    health_check_uri: /healthz
