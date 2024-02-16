@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: testapp-4-config-new
+  namespace: task-4
+data:
+  config.yaml: |
+    health_check_uri: /status
