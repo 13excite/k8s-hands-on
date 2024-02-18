@@ -27,8 +27,32 @@ sleep 15
 
 # check that k8s context is correctly set
 if kubectl config get-contexts |tail -n +2|awk {'print $2'}|grep -q "kind-${KIND_CLUSTER_NAME}"; then
-    echo "Cluster name ${KIND_CLUSTER_NAME} found and k8s context is correctly set"
+    echo "Cluster name ${KIND_CLUSTER_NAME} found and k8s context is correctly set. Continuing..."
 else
     echo "Cluster name ${KIND_CLUSTER_NAME} not found or k8s context is incorrect. Exiting..."
     exit 1
 fi
+
+
+# install ingress
+kubectl apply -f ./ingress/ingress.yaml
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+kubectl label nodes test-cluster-worker gputype=rtx4060
+
+# create namespaces
+kubectl apply -f ./spec/namespaces.yaml
+
+# create tasks
+kubectl apply -f ./spec/task1/ 
+sleep 10
+
+kubectl apply -f ./spec/task2/
+kubectl apply -f ./spec/task3/
+kubectl apply -f ./spec/task4/
+kubectl apply -f spec/99_deploy4.yaml
+
