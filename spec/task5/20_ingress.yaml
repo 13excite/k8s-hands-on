@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: testapp-5-ingress
+  namespace: task-5
+spec:
+  rules:
+    - host: testapp5.com
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: testapp-5-svc
+                port:
+                  number: 8081
