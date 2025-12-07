@@ -37,13 +37,16 @@ else
 fi
 
 
-# install ingress
-kubectl apply -f ./ingress/ingress.yaml
-
-kubectl wait --namespace ingress-nginx \
+# install envoy gw-api
+kubectl create -f envoy-gw/envoy-install.yaml && \
+kubectl wait --namespace envoy-gateway-system \
   --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
+  --selector=control-plane=envoy-gateway \
   --timeout=90s
+
+
+# todo: need to patch api-gw svc
+# kubectl patch svc envoy-basic-gw-main-gw-CHANGE_ME -p '{"spec": {"ports": [{"port": 80, "nodePort": 30080}]}}'
 
 kubectl label nodes test-cluster-worker gputype=rtx4060
 
