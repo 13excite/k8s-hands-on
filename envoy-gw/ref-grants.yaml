@@ -1,0 +1,25 @@
+apiVersion: gateway.networking.k8s.io/v1beta1 
+kind: ReferenceGrant
+metadata:
+  name: allow-task1-to-gateway
+  namespace: basic-gw
+spec:
+  from:
+    - group: gateway.networking.k8s.io 
+      kind: HTTPRoute
+      namespace: task-1 
+    - group: gateway.networking.k8s.io 
+      kind: HTTPRoute
+      namespace: task-2 
+    - group: gateway.networking.k8s.io 
+      kind: HTTPRoute
+      namespace: task-3 
+    - group: gateway.networking.k8s.io 
+      kind: HTTPRoute
+      namespace: task-4 
+    - group: gateway.networking.k8s.io 
+      kind: HTTPRoute
+      namespace: task-5 
+  to:
+    - group: ""
+      kind: Service

@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: main-gw 
+  namespace: basic-gw 
+spec:
+  gatewayClassName: eg-ingress
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: custom-proxy-config
+  listeners:
+  - allowedRoutes:
+      namespaces:
+        from: All
+    name: http
+    protocol: HTTP
+    port: 80
