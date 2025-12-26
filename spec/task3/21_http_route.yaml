@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: testapp-3-route
+  namespace: task-3
+spec:
+  parentRefs:
+    - name: main-gw
+      namespace: basic-gw 
+  hostnames:
+    - testapp3.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: testapp-3-svc
+          port: 8081
