@@ -37,18 +37,43 @@ else
 fi
 
 
-# install ingress
-kubectl apply -f ./ingress/ingress.yaml
-
-kubectl wait --namespace ingress-nginx \
+# install envoy gw-api
+kubectl create -f envoy-gw/envoy-install.yaml && \
+kubectl wait --namespace envoy-gateway-system \
   --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
+  --selector=control-plane=envoy-gateway \
   --timeout=90s
 
 kubectl label nodes test-cluster-worker gputype=rtx4060
 
 # create namespaces
 kubectl apply -f ./spec/namespaces.yaml
+
+# configure the envoy gateway: GatewayClass, EnvoyProxy infra config, Gateway, ReferenceGrant
+kubectl apply -f ./envoy-gw/envoy-ing-ctl.yaml
+kubectl apply -f ./envoy-gw/envoy-proxy-config.yaml
+kubectl apply -f ./envoy-gw/main-gateway.yaml
+kubectl apply -f ./envoy-gw/ref-grants.yaml
+
+# wait for envoy gateway to provision the proxy service for main-gw
+printf "Waiting for the envoy proxy service for gateway main-gw...\n"
+GW_SVC=""
+for i in $(seq 1 30); do
+    GW_SVC=$(kubectl get svc -n envoy-gateway-system \
+      -l gateway.envoyproxy.io/owning-gateway-namespace=basic-gw,gateway.envoyproxy.io/owning-gateway-name=main-gw \
+      -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+    [ -n "$GW_SVC" ] && break
+    sleep 2
+done
+
+if [ -z "$GW_SVC" ]; then
+    printf "${ERR_COLOR}Envoy proxy service for gateway main-gw was not created in time${NO_COLOR}\n"
+    exit 1
+fi
+
+# pin the NodePort to 30080 so it matches kind's hostPort 80 -> containerPort 30080 mapping
+kubectl patch svc "$GW_SVC" -n envoy-gateway-system --type=json \
+  -p '[{"op": "replace", "path": "/spec/ports/0/nodePort", "value": 30080}]'
 
 # create tasks
 kubectl apply -f ./spec/task1/
