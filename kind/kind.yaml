@@ -3,12 +3,6 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
   image: kindest/node:v1.33.4
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
   extraPortMappings:
   - containerPort: 30080
     hostPort: 80
